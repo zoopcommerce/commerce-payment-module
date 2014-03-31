@@ -21,7 +21,7 @@ use Zoop\Shard\Annotation\Annotations as Shard;
  *     @Shard\Permission\Basic(roles="*", allow="*")
  * })
  */
-abstract class AbstractPayment
+abstract class AbstractTransaction
 {
     use CreatedOnTrait;
     use UpdatedOnTrait;

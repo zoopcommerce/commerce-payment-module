@@ -1,9 +1,9 @@
 <?php
 
-namespace Zoop\Payment\Provider\PayPalChainedPayment\DataModel;
+namespace Zoop\Payment\Gateway\PayPal\ChainedPayment\DataModel;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Zoop\Payment\DataModel\AbstractPromotion;
+use Zoop\Payment\DataModel\AbstractTransaction;
 //Annotation imports
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 use Zoop\Shard\Annotation\Annotations as Shard;
@@ -11,7 +11,7 @@ use Zoop\Shard\Annotation\Annotations as Shard;
 /**
  * @ODM\EmbeddedDocument
  */
-class Payment extends AbstractPromotion
+class Transaction extends AbstractTransaction
 {
 
 }
