@@ -10,7 +10,8 @@ return [
         ],
     ],
     'service_manager' => [
-        'factories' => [
+        'abstract_factories' => [
+            'zoop.payment.gateway.paypal.chainedpayment'
         ]
     ],
 ];

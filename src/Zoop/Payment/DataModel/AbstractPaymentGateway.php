@@ -3,7 +3,6 @@
 namespace Zoop\Payment\DataModel;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Zoop\Api\DataModel\Country;
 use Zoop\Shard\Stamp\DataModel\CreatedOnTrait;
 use Zoop\Shard\Stamp\DataModel\CreatedByTrait;
 use Zoop\Shard\Stamp\DataModel\UpdatedOnTrait;
@@ -18,12 +17,13 @@ use Zoop\Shard\Annotation\Annotations as Shard;
  * @ODM\InheritanceType("SINGLE_COLLECTION")
  * @ODM\DiscriminatorField(fieldName="type")
  * @ODM\DiscriminatorMap({
- *     "AnzEgate"                       = "AnzEgate"
- *     "CommbankCommWeb"                = "CommbankCommWeb",
- *     "PaypalChainedPayment"           = "PaypalChainedPayment",
- *     "PaypalExpressCheckout"          = "PaypalExpressCheckout",
- *     "Pin"                            = "Pin",
- *     "StGeorgeInternetPaymentGateway" = "StGeorgeInternetPaymentGateway"
+ *     "Anz"                            = "Zoop\Payment\Gateway\Anz\DataModel\Gateway"
+ *     "CommonwealthBank"               = "Zoop\Payment\Gateway\CommonwealthBank\DataModel\Gateway",
+ *     "Free"                           = "Zoop\Payment\Gateway\Free\DataModel\Gateway",
+ *     "Paypal\ChainedPayment"          = "Zoop\Payment\Gateway\PayPal\ChainedPayment\DataModel\Gateway",
+ *     "Paypal\ExpressCheckout"         = "Zoop\Payment\Gateway\PayPal\PaypalExpressCheckout\DataModel\Gateway",
+ *     "Pin"                            = "Zoop\Payment\Gateway\Pin\DataModel\Gateway",
+ *     "StGeorge"                       = "Zoop\Payment\Gateway\StGeorge\DataModel\Gateway"
  * }) 
  */
 abstract class AbstractPaymentGateway
@@ -64,7 +64,7 @@ abstract class AbstractPaymentGateway
 
     /**
      *
-     * @ODM\ReferenceMany(targetDocument="Zoop\Api\DataModel\Country", simple="true")
+     * @ODM\Collection
      */
     protected $countries;
 
@@ -80,61 +80,114 @@ abstract class AbstractPaymentGateway
         $this->countries = new ArrayCollection();
     }
 
+    /**
+     * @return string
+     */
     public function getId()
     {
         return $this->id;
     }
 
+    /**
+     * @return int
+     */
     public function getLegacyId()
     {
         return $this->legacyId;
     }
 
+    /**
+     * Adds a legacy id
+     * 
+     * @param int $legacyId
+     */
     public function setLegacyId($legacyId)
     {
-        $this->legacyId = $legacyId;
+        $this->legacyId = (int) $legacyId;
     }
 
+    /**
+     * @return ArrayCollection
+     */
     public function getStores()
     {
         return $this->stores;
     }
 
-    public function setStores($stores)
+    /**
+     * @param ArrayCollection $stores
+     */
+    public function setStores(ArrayCollection $stores)
     {
         $this->stores = $stores;
     }
 
+    /**
+     * @param string $store
+     */
+    public function addStore($store)
+    {
+        $this->stores->add($store);
+    }
+
+    /**
+     * The label to display to the customer in the checkout
+     * 
+     * @return string
+     */
     public function getLabel()
     {
         return $this->label;
     }
 
+    /**
+     * Sets the label that the customer will see in
+     * the checkout
+     * 
+     * @param string $label
+     */
     public function setLabel($label)
     {
         $this->label = $label;
     }
 
+    /**
+     * @return ArrayCollection
+     */
     public function getCountries()
     {
         return $this->countries;
     }
 
-    public function setCountries($countries)
+    /**
+     * @param ArrayCollection $countries
+     */
+    public function setCountries(ArrayCollection $countries)
     {
         $this->countries = $countries;
     }
 
-    public function addCountry(Country $country)
+    /**
+     * 2 letter country code
+     * 
+     * @param string $country
+     */
+    public function addCountry($country)
     {
         $this->countries->add($country);
     }
 
+    /**
+     * @return TransactionFee
+     */
     public function getTransactionFee()
     {
         return $this->transactionFee;
     }
 
+    /**
+     * @param TransactionFee $transactionFee
+     */
     public function setTransactionFee(TransactionFee $transactionFee)
     {
         $this->transactionFee = $transactionFee;

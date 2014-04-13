@@ -1,12 +1,12 @@
 <?php
 
-namespace Zoop\Payment\Provider;
+namespace Zoop\Payment\Gateway;
 
 /**
  *
  * @author  Josh Stuart <josh.stuart@zoopcommerce.com>
  */
-interface ProviderInterface
+interface GatewayInterface
 {
     public function charge($amount, $currency);
 

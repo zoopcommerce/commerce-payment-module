@@ -1,12 +1,11 @@
 <?php
 
-namespace Zoop\Payment\Provider;
+namespace Zoop\Payment\Gateway;
 
 /**
  *
  * @author  Josh Stuart <josh.stuart@zoopcommerce.com>
  */
-abstract class AbstractProvider
+interface OnServerGatewayInterface
 {
-
 }

@@ -14,8 +14,13 @@ use Zoop\Shard\Annotation\Annotations as Shard;
  * @ODM\InheritanceType("SINGLE_COLLECTION")
  * @ODM\DiscriminatorField("type")
  * @ODM\DiscriminatorMap({
- *     "Limited"         = "Zoop\Legacy\Promotion\DataModel\LimitedPromotion",
- *     "Unlimited"       = "Zoop\Legacy\Promotion\DataModel\UnlimitedPromotion"
+ *     "Anz"                            = "Zoop\Payment\Gateway\Anz\DataModel\Transaction"
+ *     "CommonwealthBank"               = "Zoop\Payment\Gateway\CommonwealthBank\DataModel\Transaction",
+ *     "Free"                           = "Zoop\Payment\Gateway\Free\DataModel\Transaction",
+ *     "PaypalChainedPayment"           = "Zoop\Payment\Gateway\PayPal\ChainedPayment\DataModel\Transaction",
+ *     "PaypalExpressCheckout"          = "Zoop\Payment\Gateway\PayPal\PaypalExpressCheckout\DataModel\Transaction",
+ *     "Pin"                            = "Zoop\Payment\Gateway\Pin\DataModel\Transaction",
+ *     "StGeorge"                       = "Zoop\Payment\Gateway\StGeorge\DataModel\Transaction"
  * })
  * @Shard\AccessControl({
  *     @Shard\Permission\Basic(roles="*", allow="*")

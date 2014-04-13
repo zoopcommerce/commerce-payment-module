@@ -1,12 +1,12 @@
 <?php
 
-namespace Zoop\Payment\Provider;
+namespace Zoop\Payment\Gateway;
 
 /**
  *
  * @author  Josh Stuart <josh.stuart@zoopcommerce.com>
  */
-interface RedirectProviderInterface
+interface RedirectGatewayInterface
 {
     public function redirect($amount, $currency);
 }

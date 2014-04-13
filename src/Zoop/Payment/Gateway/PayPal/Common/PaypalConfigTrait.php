@@ -1,6 +1,6 @@
 <?php
 
-namespace Zoop\Payment\Paypal\Common;
+namespace Zoop\Payment\Gateway\Paypal\Common;
 
 trait PaypalConfigTrait
 {
