@@ -11,7 +11,7 @@ return [
     ],
     'service_manager' => [
         'abstract_factories' => [
-            'zoop.payment.gateway.paypal.chainedpayment'
+            'Zoop\Payment\Gateway\Service\AbstractGatewayFactory' //zoop.payment.gateway.{gateway_name}
         ]
     ],
 ];

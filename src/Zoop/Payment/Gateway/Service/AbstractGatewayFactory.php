@@ -2,6 +2,7 @@
 
 namespace Zoop\Payment\Gateway\Service;
 
+use \ReflectionClass;
 use Zend\ServiceManager\ServiceLocatorInterface;
 use Zend\ServiceManager\AbstractFactoryInterface;
 
@@ -15,11 +16,9 @@ class AbstractGatewayFactory implements AbstractFactoryInterface
 
     public function createServiceWithName(ServiceLocatorInterface $serviceLocator, $name, $requestedName)
     {
-        $service = new \stdClass();
-
-        $service->name = $requestedName;
-
-        return $service;
+        $class = new ReflectionClass($requestedName);
+        $gateway = $class->newInstanceArgs();
+        
+        die(var_dump($gateway));
     }
-
 }

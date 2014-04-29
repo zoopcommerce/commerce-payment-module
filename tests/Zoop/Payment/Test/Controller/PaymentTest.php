@@ -2,17 +2,14 @@
 
 namespace Zoop\Payment\Test\Controller;
 
-use Sds\ModuleUnitTester\AbstractControllerTest;
+use Zoop\Payment\Test\BaseTest;
 
-class PaymentTest extends AbstractControllerTest
+class PaymentTest extends BaseTest
 {
-    public function setUp()
+    public function testPayPal()
     {
-
+        $paypal = $this->getApplicationServiceLocator()->get('Zoop\Payment\Gateway\PayPal\ChainedPayment\Gateway');
+        
     }
 
-    public function tearDown()
-    {
-
-    }
 }

@@ -2,7 +2,7 @@
 
 namespace Zoop\Payment\Gateway\PayPal\ChainedPayment;
 
-use Zoop\Payment\Gateway\AbstractProvider;
+use Zoop\Payment\Gateway\AbstractGateway;
 use Zoop\Payment\Gateway\GatewayInterface;
 use Zoop\Payment\Gateway\RedirectGatewayInterface;
 
@@ -10,7 +10,7 @@ use Zoop\Payment\Gateway\RedirectGatewayInterface;
  *
  * @author  Josh Stuart <josh.stuart@zoopcommerce.com>
  */
-class Gateway extends AbstractProvider implements GatewayInterface, RedirectGatewayInterface
+class Gateway extends AbstractGateway implements GatewayInterface, RedirectGatewayInterface
 {
     public function charge($amount, $currency)
     {
