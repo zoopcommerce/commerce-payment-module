@@ -2,21 +2,22 @@
 
 namespace Zoop\Payment\Gateway;
 
+use Zoop\Order\DataModel\Order;
+
 /**
  *
  * @author  Josh Stuart <josh.stuart@zoopcommerce.com>
  */
-
 interface GatewayInterface
 {
     /**
      * @param double $amount
      * @param string $currency
      */
-    public function charge($amount, $currency);
+    public function charge($amount, $currency, Order $order);
 
     /**
      * @param double $amount
      */
-    public function refund($amount = 0);
+    public function refund($amount, Order $order);
 }

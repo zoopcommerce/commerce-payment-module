@@ -13,9 +13,11 @@ use PayPal\Types\AP\SetPaymentOptionsRequest;
 use PayPal\Types\AP\RefundRequest;
 use PayPal\Types\AP\DisplayOptions;
 use PayPal\Types\AP\InvoiceData;
+use PayPal\Types\AP\PayResponse;
 use PayPal\Types\Common\ClientDetailsType;
 use PayPal\Types\Common\FaultMessage;
 use PayPal\Types\Common\ErrorData;
+use Zoop\Order\DataModel\Order;
 use Zoop\Payment\Gateway\AbstractGateway;
 use Zoop\Payment\Gateway\GatewayInterface;
 use Zoop\Payment\Gateway\GatewayModelInterface;
@@ -26,7 +28,8 @@ use Zoop\Payment\Gateway\RedirectGatewayInterface;
  * @author  Josh Stuart <josh.stuart@zoopcommerce.com>
  */
 class Gateway extends AbstractGateway implements
-GatewayInterface, RedirectGatewayInterface
+    GatewayInterface,
+    RedirectGatewayInterface
 {
 
     const FEE_PRIMARY = 'PRIMARYRECEIVER';
@@ -44,47 +47,81 @@ GatewayInterface, RedirectGatewayInterface
     protected $secondaryReceivers = [];
     protected $errorLanguage = 'en_US';
 
-    public function charge($amount, $currency)
+    public function charge($amount, $currency, Order $order)
+    {
+        try {
+            $response = $this->doCharge($amount, $currency, $order);
+        } catch (Exception $ex) {
+            
+        }
+    }
+
+    public function redirect($amount, $currency, Order $order)
     {
         
     }
 
-    public function redirect($amount, $currency)
+    public function refund($amount, Order $order)
     {
         
     }
 
-    public function refund($amount = 0)
+    /**
+     * 
+     * @param double $amount
+     * @param string $currency
+     * @param Order $order
+     * @return PayResponse
+     * @throws APIException
+     */
+    protected function doCharge($amount, $currency, Order $order)
     {
-        
-    }
+        $requestEnvelope = new RequestEnvelope();
+        $requestEnvelope->errorLanguage = $this->error_language;
 
-    protected function doCharge()
-    {
-        $payRequest = new PayRequest();
-        $payRequest->actionType = self::PAYMENT_TYPE_PAY;
-        $payRequest->cancelUrl = $this->getCancelUrl();
+        $payRequest = new PayRequest(
+                $requestEnvelope, self::PAYMENT_TYPE_PAY, $this->getCancelUrl(), $currency, $this->getReturnUrl()
+        );
         $payRequest->ipnNotificationUrl = $this->getIpnUrl();
-        $payRequest->returnUrl = $this->getReturnUrl();
-//        $payRequest->trackingId = $tracking_id;
-        $payRequest->clientDetails = new ClientDetailsType();
-        $payRequest->clientDetails->applicationId = $this->getApplicationId();
-        $payRequest->clientDetails->deviceId = $this->device_id;
-        $payRequest->clientDetails->ipAddress = $_SERVER['REMOTE_ADDR'];
-        $payRequest->currencyCode = $currency;
         $payRequest->reverseAllParallelPaymentsOnError = true;
-        if (!empty($this->payment_memo)) {
-            $payRequest->memo = $this->payment_memo;
-        }
-        $payRequest->feesPayer = $this->payee_fee_method;
+        $payRequest->memo = 'Order ID: ' . $order->getId();
 
-        // set the payer
-        if (!empty($this->payer)) {
-            $payRequest->senderEmail = $this->payer['email'];
+        //client details
+        $clientDetails = new ClientDetailsType();
+        $clientDetails->ipAddress = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
+
+        $payRequest->clientDetails = $clientDetails;
+        $payRequest->receiverList = $this->getReceiverList($amount, $order);
+
+        $adaptivePayment = new AdaptivePaymentsService($this->getConfig());
+        return $adaptivePayment->Pay($payRequest);
+    }
+
+    protected function getReceiverList($amount, Order $order)
+    {
+        $receivers = [];
+
+        //primary
+        $receiver = new Receiver();
+        $receiver->email = $this->getPrimaryReceiver();
+        $receiver->amount = $amount;
+        $receiver->primary = true;
+
+        // add reciever to pay request
+        $receivers[] = $receiver;
+
+        //secondary
+        foreach ($this->getSecondaryReceivers() as $payee) {
+            $receiver = new Receiver();
+            $receiver->email = $payee;
+//            $receiver->amount = $order->getCommission()->getPaid();
+            $receiver->primary = false;
+
+            // add reciever to pay request
+            $receivers[] = $receiver;
         }
 
-        $payRequest->requestEnvelope = new RequestEnvelope();
-        $payRequest->requestEnvelope->errorLanguage = $this->error_language;
+        return new ReceiverList($receivers);
     }
 
     /**
@@ -212,5 +249,4 @@ GatewayInterface, RedirectGatewayInterface
     {
         $this->returnUrl = $returnUrl;
     }
-
 }
