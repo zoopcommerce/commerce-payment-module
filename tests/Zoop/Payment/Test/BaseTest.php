@@ -4,23 +4,30 @@ namespace Zoop\Payment\Test;
 
 use Zend\Test\PHPUnit\Controller\AbstractHttpControllerTestCase;
 use Doctrine\ODM\MongoDB\DocumentManager;
+use Zoop\Store\DataModel\Store;
 
 abstract class BaseTest extends AbstractHttpControllerTestCase
 {
     protected static $documentManager;
+    protected static $serviceLocator;
     protected static $dbName;
+    protected static $store;
 
     public function setUp()
     {
-        if (!isset(self::$documentManager)) {
+        if (!isset(self::$serviceLocator)) {
             $this->setApplicationConfig(
                 require __DIR__ . '/../../../test.application.config.php'
             );
-            self::$documentManager = $this->getApplicationServiceLocator()->get('shard.commerce.modelmanager');
+            self::$serviceLocator = $this->getApplicationServiceLocator();
+        }
+        
+        if (!isset(self::$documentManager)) {
+            self::$documentManager = self::$serviceLocator->get('shard.commerce.modelmanager');
         }
         
         if (!isset(self::$dbName)) {
-            self::$dbName = $this->getApplicationServiceLocator()->get('config')['doctrine']['odm']['connection']['commerce']['dbname'];
+            self::$dbName = self::$serviceLocator->get('config')['doctrine']['odm']['connection']['commerce']['dbname'];
         }
     }
 
@@ -79,5 +86,26 @@ abstract class BaseTest extends AbstractHttpControllerTestCase
     public static function setDbName($dbName)
     {
         self::$dbName = $dbName;
+    }
+
+    /**
+     * 
+     * @return Store
+     */
+    public static function getStore()
+    {
+        if (!isset(self::$store)) {
+            $dm = self::getDocumentManager();
+            
+            $store = self::$serviceLocator->get('zoop.commerce.store.active');
+
+            $dm->persist($store);
+            $dm->flush($store);
+            $dm->clear($store);
+
+            self::$store = $store;
+        }
+
+        return self::$store;
     }
 }

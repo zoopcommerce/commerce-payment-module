@@ -14,7 +14,7 @@ use Zoop\Shard\Annotation\Annotations as Shard;
  * @ODM\InheritanceType("SINGLE_COLLECTION")
  * @ODM\DiscriminatorField("type")
  * @ODM\DiscriminatorMap({
- *     "Anz"                            = "Zoop\Payment\Gateway\Anz\DataModel\Transaction"
+ *     "Anz"                            = "Zoop\Payment\Gateway\Anz\DataModel\Transaction",
  *     "CommonwealthBank"               = "Zoop\Payment\Gateway\CommonwealthBank\DataModel\Transaction",
  *     "Free"                           = "Zoop\Payment\Gateway\Free\DataModel\Transaction",
  *     "PaypalChainedPayment"           = "Zoop\Payment\Gateway\PayPal\ChainedPayment\DataModel\Transaction",

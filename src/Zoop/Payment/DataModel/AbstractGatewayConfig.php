@@ -17,16 +17,16 @@ use Zoop\Shard\Annotation\Annotations as Shard;
  * @ODM\InheritanceType("SINGLE_COLLECTION")
  * @ODM\DiscriminatorField(fieldName="type")
  * @ODM\DiscriminatorMap({
- *     "Anz"                            = "Zoop\Payment\Gateway\Anz\DataModel\Gateway"
- *     "CommonwealthBank"               = "Zoop\Payment\Gateway\CommonwealthBank\DataModel\Gateway",
- *     "Free"                           = "Zoop\Payment\Gateway\Free\DataModel\Gateway",
- *     "Paypal\ChainedPayment"          = "Zoop\Payment\Gateway\PayPal\ChainedPayment\DataModel\Gateway",
- *     "Paypal\ExpressCheckout"         = "Zoop\Payment\Gateway\PayPal\PaypalExpressCheckout\DataModel\Gateway",
- *     "Pin"                            = "Zoop\Payment\Gateway\Pin\DataModel\Gateway",
- *     "StGeorge"                       = "Zoop\Payment\Gateway\StGeorge\DataModel\Gateway"
+ *     "Anz"                            = "Zoop\Payment\Gateway\Anz\DataModel\GatewayConfig",
+ *     "CommonwealthBank"               = "Zoop\Payment\Gateway\CommonwealthBank\DataModel\GatewayConfig",
+ *     "Free"                           = "Zoop\Payment\Gateway\Free\DataModel\GatewayConfig",
+ *     "Paypal\ChainedPayment"          = "Zoop\Payment\Gateway\PayPal\ChainedPayment\DataModel\GatewayConfig",
+ *     "Paypal\ExpressCheckout"         = "Zoop\Payment\Gateway\PayPal\ExpressCheckout\DataModel\GatewayConfig",
+ *     "Pin"                            = "Zoop\Payment\Gateway\Pin\DataModel\GatewayConfig",
+ *     "StGeorge"                       = "Zoop\Payment\Gateway\StGeorge\DataModel\GatewayConfig"
  * }) 
  */
-abstract class AbstractPaymentGateway
+abstract class AbstractGatewayConfig
 {
     use CreatedOnTrait;
     use CreatedByTrait;

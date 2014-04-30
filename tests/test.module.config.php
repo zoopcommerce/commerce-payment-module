@@ -69,5 +69,10 @@ return [
                 ]
             ]
         ],
-    ]
+    ],
+    'service_manager' => [
+        'factories' => [
+            'zoop.commerce.store.active' => 'Zoop\Payment\Test\ActiveStoreFactory'
+        ],
+    ],
 ];
