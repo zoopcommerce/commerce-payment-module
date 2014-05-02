@@ -7,13 +7,13 @@ return [
                 'paypal.chainedpayment' => [
                     'config' => [
                         //below are sandbox credentials
-                        'acct1.UserName' => 'dev-us-zoop_api1.zoopcommerce.com',
-                        'acct1.Password' => '1364543052',
-                        'acct1.Signature' => 'Auqmk6WOfK5MgQdka.87kFxacO-8A0FSyJ.r0wUXj6jfVMXU.zFtVQk1',
-                        'acct1.AppId' => 'APP-80W284485P519543T',
-                        'service.RedirectURL' => 'https://www.sandbox.paypal.com/webscr&cmd=',
-                        'service.EndPoint.AdaptivePayments' => 'https://svcs.sandbox.paypal.com/',
-                        'service.EndPoint.IPN' => 'https://www.sandbox.paypal.com/cgi-bin/webscr',
+                        'acct1.UserName' => 'paypal_api1.completepurchase.com',
+                        'acct1.Password' => 'YKXU2YBEZLZ29QS5',
+                        'acct1.Signature' => 'ABqcw6xTAKvmsdu-80HQn8X9G2EGA28NksV.zNJQpAMWEgjekSNdsE6.',
+                        'acct1.AppId' => 'APP-28903957F1859293N',
+                        'service.RedirectURL' => 'https://www.paypal.com/webscr&cmd=',
+                        'service.EndPoint.AdaptivePayments' => 'https://svcs.paypal.com/',
+                        'service.EndPoint.IPN' => 'https://ipnpb.paypal.com/cgi-bin/webscr',
                         'http.ConnectionTimeOut' => '30',
                         'http.Retry' => '5',
                         'log.FileName' => 'PayPal.log',
@@ -21,11 +21,9 @@ return [
                         'log.LogEnabled' => 'false',
                     ],
                     'errorLanguage' => 'en_US',
-                    'ipn_url' => 'http://ops.zoopcommerce.local/admin/payments/paypal/chainedpayments/ipn',
-                    'primary_receiver' => 'dev-us-merchant@zoopcommerce.com',
-                    'secondary_receivers' => [
-                        'dev-us-merchant2@zoopcommerce.com'
-                    ]
+                    'ipn_url' => 'http://ops.zoopcommerce.com/admin/payments/paypal/chainedpayments/ipn',
+                    'primary_receiver' => null,
+                    'secondary_receivers' => [] //'paypal@zoopcommerce.com'
                 ]
             ]
         ],

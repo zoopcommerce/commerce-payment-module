@@ -8,6 +8,7 @@ use PayPal\Types\AP\PayRequest;
 use PayPal\Types\AP\Receiver;
 use PayPal\Types\AP\ReceiverList;
 use PayPal\Types\Common\RequestEnvelope;
+use PayPal\Types\AP\SetPaymentOptionsResponse;
 use PayPal\Types\AP\ReceiverOptions;
 use PayPal\Types\AP\SetPaymentOptionsRequest;
 use PayPal\Types\AP\RefundRequest;
@@ -43,6 +44,8 @@ class Gateway extends AbstractGateway implements
     protected $cancelUrl;
     protected $returnUrl;
     protected $ipnUrl;
+    protected $headerImage;
+    protected $store;
     protected $primaryReceiver;
     protected $secondaryReceivers = [];
     protected $errorLanguage = 'en_US';
@@ -50,7 +53,16 @@ class Gateway extends AbstractGateway implements
     public function charge($amount, $currency, Order $order)
     {
         try {
-            $response = $this->doCharge($amount, $currency, $order);
+            $trackingId = $this->createTrackingId($order);
+            
+            $response = $this->doCharge($amount, $currency, $trackingId, $order);
+
+            if (is_array($response->error) && count($response->error) > 0) {
+                $this->formatErrors($response->error);
+            } else {
+                $paymentOptions = $this->setPaymentOptions($response->payKey, $order);
+                
+            }
         } catch (Exception $ex) {
             
         }
@@ -77,11 +89,19 @@ class Gateway extends AbstractGateway implements
     protected function doCharge($amount, $currency, Order $order)
     {
         $requestEnvelope = new RequestEnvelope();
-        $requestEnvelope->errorLanguage = $this->error_language;
+        $requestEnvelope->errorLanguage = $this->getErrorLanguage();
 
+        $receivers = $this->getReceiverList($amount, $order);
+        
         $payRequest = new PayRequest(
-                $requestEnvelope, self::PAYMENT_TYPE_PAY, $this->getCancelUrl(), $currency, $this->getReturnUrl()
+            $requestEnvelope,
+            self::PAYMENT_TYPE_PAY,
+            $this->getCancelUrl(),
+            $currency,
+            $receivers,
+            $this->getReturnUrl()
         );
+        $payRequest->feesPayer = (count($receivers->receiver) > 1) ? self::FEE_PRIMARY : self::FEE_EACH;
         $payRequest->ipnNotificationUrl = $this->getIpnUrl();
         $payRequest->reverseAllParallelPaymentsOnError = true;
         $payRequest->memo = 'Order ID: ' . $order->getId();
@@ -89,11 +109,10 @@ class Gateway extends AbstractGateway implements
         //client details
         $clientDetails = new ClientDetailsType();
         $clientDetails->ipAddress = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
-
         $payRequest->clientDetails = $clientDetails;
-        $payRequest->receiverList = $this->getReceiverList($amount, $order);
 
         $adaptivePayment = new AdaptivePaymentsService($this->getConfig());
+
         return $adaptivePayment->Pay($payRequest);
     }
 
@@ -101,27 +120,78 @@ class Gateway extends AbstractGateway implements
     {
         $receivers = [];
 
-        //primary
-        $receiver = new Receiver();
-        $receiver->email = $this->getPrimaryReceiver();
-        $receiver->amount = $amount;
-        $receiver->primary = true;
-
-        // add reciever to pay request
-        $receivers[] = $receiver;
-
         //secondary
-        foreach ($this->getSecondaryReceivers() as $payee) {
+        foreach ($this->getSecondaryReceivers() as $payeeEmail) {
             $receiver = new Receiver();
-            $receiver->email = $payee;
-//            $receiver->amount = $order->getCommission()->getPaid();
+            $receiver->email = $payeeEmail;
+            $receiver->amount = $order->getCommission()->getCharged();
             $receiver->primary = false;
 
             // add reciever to pay request
             $receivers[] = $receiver;
         }
+        
+        //primary
+        $receiver = new Receiver();
+        $receiver->email = $this->getPrimaryReceiver();
+        $receiver->amount = $amount;
+        $receiver->primary = !empty($receivers);
 
+        // add main reciever to pay request
+        $receivers[] = $receiver;
+        
         return new ReceiverList($receivers);
+    }
+
+    /**
+     * 
+     * @param string $paykey
+     * @param string $trackingId
+     * @param Order $order
+     * @return SetPaymentOptionsResponse
+     */
+    protected function setPaymentOptions($paykey, Order $order)
+    {
+        $requestEnv = new RequestEnvelope();
+        $requestEnv->errorLanguage = $this->getErrorLanguage();
+        
+        $optionsRequest = new SetPaymentOptionsRequest($requestEnv);
+        $optionsRequest->payKey = $paykey;
+
+        // general page display data
+        $optionsRequest->displayOptions = new DisplayOptions();
+
+        // header image
+        $headerImage = $this->getHeaderImage();
+        if (!empty($headerImage)) {
+            $optionsRequest->displayOptions->headerImageUrl = $headerImage;
+        }
+
+        // business name
+        $optionsRequest->displayOptions->businessName = $this->getStore()->getName();
+
+        //shipping details
+        $orderDetails = $this->getOrderDetails();
+        if (!empty($orderDetails)) {
+            $optionsRequest->senderOptions = new SenderOptions();
+            
+            $orderAddress = $order->getAddress();
+            
+            $shippingAddress = new ShippingAddressInfo();
+            $shippingAddress->addresseeName = $order->getFullName();
+            $shippingAddress->street1 = $orderAddress->getLine1();
+            $shippingAddress->street2 = $orderAddress->getLine2();
+            $shippingAddress->city = $orderAddress->getCity();
+            $shippingAddress->state = $orderAddress->getState();
+            $shippingAddress->zip = $orderAddress->getPostcode();
+            $shippingAddress->country = $orderAddress->getCountry();
+
+            $optionsRequest->senderOptions->shippingAddress = $shippingAddress;
+        }
+        
+        $service = new AdaptivePaymentsService($this->getConfig());
+        
+        return $service->SetPaymentOptions($optionsRequest);
     }
 
     /**
@@ -249,4 +319,16 @@ class Gateway extends AbstractGateway implements
     {
         $this->returnUrl = $returnUrl;
     }
+
+    protected function formatErrors($rawErrors)
+    {
+        //errors
+        $errors = [];
+        /* @var $error ErrorData */
+        foreach ($rawErrors as $error) {
+            $errors[] = $error->message;
+        }
+        return implode('. ', $errors);
+    }
+
 }

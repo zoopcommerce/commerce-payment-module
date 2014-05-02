@@ -13,6 +13,12 @@ class GatewayFactory extends AbstractGatewayFactory implements FactoryInterface
 
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        return new Gateway($this->getConfig($serviceLocator));
+        $store = $serviceLocator->get('zoop.commerce.store.active');
+        
+        $gatewayConfig = $this->getConfig($serviceLocator);
+        $gatewayConfig['returnUrl'] = 'http://' . $store->getDomain();
+        $gatewayConfig['cancelUrl'] = 'http://' . $store->getDomain();
+
+        return new Gateway($gatewayConfig);
     }
 }

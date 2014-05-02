@@ -13,11 +13,13 @@ interface GatewayInterface
     /**
      * @param double $amount
      * @param string $currency
+     * @param Order $order
      */
     public function charge($amount, $currency, Order $order);
 
     /**
      * @param double $amount
+     * @param Order $order
      */
     public function refund($amount, Order $order);
 }
