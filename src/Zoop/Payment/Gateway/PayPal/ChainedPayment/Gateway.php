@@ -18,10 +18,11 @@ use PayPal\Types\AP\PayResponse;
 use PayPal\Types\Common\ClientDetailsType;
 use PayPal\Types\Common\FaultMessage;
 use PayPal\Types\Common\ErrorData;
-use Zoop\Order\DataModel\Order;
+use Zoop\Order\DataModel\OrderInterface;
 use Zoop\Payment\Gateway\AbstractGateway;
 use Zoop\Payment\Gateway\GatewayInterface;
-use Zoop\Payment\Gateway\GatewayModelInterface;
+use Zoop\Payment\Gateway\GatewayResponseInterface;
+use Zoop\Payment\Gateway\GatewayResponse;
 use Zoop\Payment\Gateway\RedirectGatewayInterface;
 
 /**
@@ -32,7 +33,6 @@ class Gateway extends AbstractGateway implements
     GatewayInterface,
     RedirectGatewayInterface
 {
-
     const FEE_PRIMARY = 'PRIMARYRECEIVER';
     const FEE_EACH = 'EACHRECEIVER';
     const FEE_SECONDARY = 'SECONDARYONLY';
@@ -50,30 +50,56 @@ class Gateway extends AbstractGateway implements
     protected $secondaryReceivers = [];
     protected $errorLanguage = 'en_US';
 
-    public function charge($amount, $currency, Order $order)
+    /**
+     * 
+     * @param type $amount
+     * @param type $currency
+     * @param OrderInterface $order
+     * @return GatewayResponseInterface $response
+     */
+    public function charge($amount, $currency, OrderInterface $order)
     {
+        $response = new GatewayResponse;
         try {
             $trackingId = $this->createTrackingId($order);
-            
-            $response = $this->doCharge($amount, $currency, $trackingId, $order);
 
-            if (is_array($response->error) && count($response->error) > 0) {
-                $this->formatErrors($response->error);
+            $chargeResponse = $this->doCharge($amount, $currency, $trackingId, $order);
+
+            if (is_array($chargeResponse->error) && count($chargeResponse->error) > 0) {
+                $response->setError($this->formatErrors($chargeResponse->error));
+                $response->setSuccess(false);
             } else {
-                $paymentOptions = $this->setPaymentOptions($response->payKey, $order);
-                
+                //apply the paypal payment options
+                $paymentOptions = $this->setPaymentOptions($chargeResponse->payKey, $order);
+                $response->setSuccess(true);
             }
         } catch (Exception $ex) {
-            
+            $response->setSuccess(false);
+            $response->setError($ex->getMessage());
         }
+
+        return $response;
     }
 
-    public function redirect($amount, $currency, Order $order)
+    /**
+     * 
+     * @param type $amount
+     * @param OrderInterface $order
+     * @return GatewayResponseInterface $response
+     */
+    public function refund($amount, OrderInterface $order)
     {
         
     }
 
-    public function refund($amount, Order $order)
+    /**
+     * 
+     * @param type $amount
+     * @param type $currency
+     * @param \Zoop\Order\DataModel\OrderInterface $order
+     * @return GatewayResponseInterface $response
+     */
+    public function finalize($amount, $currency, OrderInterface $order)
     {
         
     }
@@ -82,17 +108,17 @@ class Gateway extends AbstractGateway implements
      * 
      * @param double $amount
      * @param string $currency
-     * @param Order $order
+     * @param OrderInterface $order
      * @return PayResponse
      * @throws APIException
      */
-    protected function doCharge($amount, $currency, Order $order)
+    protected function doCharge($amount, $currency, $trackingId, OrderInterface $order)
     {
         $requestEnvelope = new RequestEnvelope();
         $requestEnvelope->errorLanguage = $this->getErrorLanguage();
 
         $receivers = $this->getReceiverList($amount, $order);
-        
+
         $payRequest = new PayRequest(
             $requestEnvelope,
             self::PAYMENT_TYPE_PAY,
@@ -101,10 +127,11 @@ class Gateway extends AbstractGateway implements
             $receivers,
             $this->getReturnUrl()
         );
+        $payRequest->trackingId = $trackingId;
         $payRequest->feesPayer = (count($receivers->receiver) > 1) ? self::FEE_PRIMARY : self::FEE_EACH;
         $payRequest->ipnNotificationUrl = $this->getIpnUrl();
         $payRequest->reverseAllParallelPaymentsOnError = true;
-        $payRequest->memo = 'Order ID: ' . $order->getId();
+        $payRequest->memo = 'OrderInterface ID: ' . $order->getId();
 
         //client details
         $clientDetails = new ClientDetailsType();
@@ -116,7 +143,7 @@ class Gateway extends AbstractGateway implements
         return $adaptivePayment->Pay($payRequest);
     }
 
-    protected function getReceiverList($amount, Order $order)
+    protected function getReceiverList($amount, OrderInterface $order)
     {
         $receivers = [];
 
@@ -130,7 +157,7 @@ class Gateway extends AbstractGateway implements
             // add reciever to pay request
             $receivers[] = $receiver;
         }
-        
+
         //primary
         $receiver = new Receiver();
         $receiver->email = $this->getPrimaryReceiver();
@@ -139,7 +166,7 @@ class Gateway extends AbstractGateway implements
 
         // add main reciever to pay request
         $receivers[] = $receiver;
-        
+
         return new ReceiverList($receivers);
     }
 
@@ -147,14 +174,14 @@ class Gateway extends AbstractGateway implements
      * 
      * @param string $paykey
      * @param string $trackingId
-     * @param Order $order
+     * @param OrderInterface $order
      * @return SetPaymentOptionsResponse
      */
-    protected function setPaymentOptions($paykey, Order $order)
+    protected function setPaymentOptions($paykey, OrderInterface $order)
     {
         $requestEnv = new RequestEnvelope();
         $requestEnv->errorLanguage = $this->getErrorLanguage();
-        
+
         $optionsRequest = new SetPaymentOptionsRequest($requestEnv);
         $optionsRequest->payKey = $paykey;
 
@@ -171,12 +198,12 @@ class Gateway extends AbstractGateway implements
         $optionsRequest->displayOptions->businessName = $this->getStore()->getName();
 
         //shipping details
-        $orderDetails = $this->getOrderDetails();
+        $orderDetails = $this->getOrderInterfaceDetails();
         if (!empty($orderDetails)) {
             $optionsRequest->senderOptions = new SenderOptions();
-            
+
             $orderAddress = $order->getAddress();
-            
+
             $shippingAddress = new ShippingAddressInfo();
             $shippingAddress->addresseeName = $order->getFullName();
             $shippingAddress->street1 = $orderAddress->getLine1();
@@ -188,9 +215,9 @@ class Gateway extends AbstractGateway implements
 
             $optionsRequest->senderOptions->shippingAddress = $shippingAddress;
         }
-        
+
         $service = new AdaptivePaymentsService($this->getConfig());
-        
+
         return $service->SetPaymentOptions($optionsRequest);
     }
 
@@ -320,6 +347,26 @@ class Gateway extends AbstractGateway implements
         $this->returnUrl = $returnUrl;
     }
 
+    /**
+     * The header image to display on PayPal
+     * It's best if the dimensions are 750px X 90px
+     * 
+     * @return string
+     */
+    public function getHeaderImage()
+    {
+        return $this->headerImage;
+    }
+
+    /**
+     * 
+     * @param string $headerImage
+     */
+    public function setHeaderImage($headerImage)
+    {
+        $this->headerImage = $headerImage;
+    }
+
     protected function formatErrors($rawErrors)
     {
         //errors
@@ -330,5 +377,4 @@ class Gateway extends AbstractGateway implements
         }
         return implode('. ', $errors);
     }
-
 }

@@ -25,6 +25,8 @@ class PaymentTest extends BaseTest
             $order->getTotal()->getCurrency()->getCode(),
             $order
         );
+        die(Var_dump($response));
+        $this->assertTrue($response->isSuccess());
     }
 
     /**

@@ -2,7 +2,8 @@
 
 namespace Zoop\Payment\Gateway;
 
-use Zoop\Order\DataModel\Order;
+use Zoop\Order\DataModel\OrderInterface;
+use Zoop\Payment\Gateway\GatewayResponseInterface;
 
 /**
  *
@@ -13,7 +14,8 @@ interface RedirectGatewayInterface
     /**
      * @param double $amount
      * @param string $currency
-     * @param Order $order
+     * @param OrderInterface $order
+     * @param GatewayResponseInterface $response
      */
-    public function redirect($amount, $currency, Order $order);
+    public function finalize($amount, $currency, OrderInterface $order);
 }

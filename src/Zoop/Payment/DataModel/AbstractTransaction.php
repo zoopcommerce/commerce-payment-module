@@ -30,4 +30,62 @@ abstract class AbstractTransaction
 {
     use CreatedOnTrait;
     use UpdatedOnTrait;
+
+    /**
+     *
+     * @ODM\Boolean
+     */
+    protected $isComplete;
+
+    /**
+     *
+     * @ODM\Float
+     */
+    protected $amount;
+
+    /**
+     * 
+     * @return boolean
+     */
+    public function isComplete()
+    {
+        return $this->getIsComplete();
+    }
+
+    /**
+     * 
+     * @return boolean
+     */
+    public function getIsComplete()
+    {
+        return $this->isComplete;
+    }
+
+    /**
+     * 
+     * @return float
+     */
+    public function getAmount()
+    {
+        return $this->amount;
+    }
+
+    /**
+     * 
+     * @param boolean $isComplete
+     */
+    public function setIsComplete($isComplete)
+    {
+        $this->isComplete = (boolean) $isComplete;
+    }
+
+    /**
+     * 
+     * @param float $amount
+     */
+    public function setAmount($amount)
+    {
+        $this->amount = (float) $amount;
+    }
+
 }
