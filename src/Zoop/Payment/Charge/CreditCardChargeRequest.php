@@ -13,6 +13,13 @@ class CreditCardChargeRequest extends AbstractChargeRequest implements
     CreditCardChargeRequestInterface
 {
     protected $creditCard;
+    
+    public function __construct($amount, CreditCardInterface $creditCard, OrderInterface $order)
+    {
+        $this->setAmount($amount);
+        $this->setCreditCard($creditCard);
+        $this->setOrder($order);
+    }
 
     /**
      * @return CreditCardInterface

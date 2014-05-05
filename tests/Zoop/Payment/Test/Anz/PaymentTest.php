@@ -4,7 +4,8 @@ namespace Zoop\Payment\Test\Anz;
 
 use Zoop\Payment\Test\BaseTest;
 use Zoop\Payment\Gateway\Anz\Gateway;
-use Zoop\Payment\Charge\ChargeRequest;
+use Zoop\Payment\Charge\CreditCardChargeRequest;
+use Zoop\Payment\DataModel\CreditCard;
 use Zoop\Payment\Gateway\Anz\DataModel\GatewayConfig;
 
 class PaymentTest extends BaseTest
@@ -20,7 +21,14 @@ class PaymentTest extends BaseTest
         // We might want to split payments
         $amount = $order->getTotal()->getOrderPrice();
         
-        $chargeRequest = new ChargeRequest($amount, $order);
+        $creditCard = new CreditCard;
+        $creditCard->setName('John Doe');
+        $creditCard->setNumber('4987654321098769');
+        $creditCard->setExpiryMonth('05');
+        $creditCard->setExpiryYear('17');
+        $creditCard->setCvc('');
+        
+        $chargeRequest = new CreditCardChargeRequest($amount, $creditCard, $order);
         
         $response = $anz->charge($chargeRequest);
         
