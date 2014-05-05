@@ -1,6 +1,6 @@
 <?php
 
-namespace Zoop\Payment\Test\PayPal;
+namespace Zoop\Payment\Test\Anz;
 
 use Zoop\Payment\Test\BaseTest;
 use Zoop\Order\DataModel\Order;
@@ -8,46 +8,24 @@ use Zoop\Order\DataModel\Total;
 use Zoop\Order\DataModel\Commission;
 use Zoop\Common\DataModel\Address;
 use Zoop\Common\DataModel\Currency;
-use Zoop\Payment\Gateway\PayPal\ChainedPayment\Gateway;
-use Zoop\Payment\Gateway\PayPal\ChainedPayment\DataModel\GatewayConfig;
+use Zoop\Payment\Gateway\Anz\Gateway;
+use Zoop\Payment\Gateway\Anz\DataModel\GatewayConfig;
 
 class PaymentTest extends BaseTest
 {
     public function testPaymentRequest()
     {
-        $paypal = $this->getApplicationServiceLocator()->get('zoop.commerce.payment.gateway.paypal.chainedpayment');
-        
-        /* @var $paypal Gateway */
+        $anz = $this->getApplicationServiceLocator()->get('zoop.commerce.payment.gateway.anz');
+       
+        /* @var $anz Gateway */
         $order = $this->createOrder();
         
-        $response = $paypal->charge(
+        $response = $anz->charge(
             $order->getTotal()->getOrderPrice(),
             $order->getTotal()->getCurrency()->getCode(),
             $order
         );
         $this->assertTrue($response->isSuccess());
-    }
-
-    /**
-     * @return GatewayConfig
-     */
-    protected function createPayPalConfig()
-    {
-        $store = $this->getStore();
-        
-        $config = new GatewayConfig;
-        $config->setSandbox(true);
-        $config->setVerified(true);
-        $config->setPrimaryReceiver('dev-us-merchant@zoopcommerce.com');
-        $config->setLabel('PayPal');
-        $config->addCountry('AU');
-        $config->addStore($store);
-        
-        self::getDocumentManager()->persist($config);
-        self::getDocumentManager()->flush($config);
-        self::getDocumentManager()->clear($config);
-        
-        return $config;
     }
 
     /**

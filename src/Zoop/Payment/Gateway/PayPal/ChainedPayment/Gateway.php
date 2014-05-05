@@ -70,7 +70,7 @@ class Gateway extends AbstractGateway implements
                 $response->setSuccess(false);
             } else {
                 //apply the paypal payment options
-                $paymentOptions = $this->setPaymentOptions($chargeResponse->payKey, $order);
+//                $paymentOptions = $this->setPaymentOptions($chargeResponse->payKey, $order);
                 $response->setSuccess(true);
             }
         } catch (Exception $ex) {
@@ -310,7 +310,7 @@ class Gateway extends AbstractGateway implements
     {
         $this->errorLanguage = $errorLanguage;
     }
-
+    
     /**
      * 
      * @return string

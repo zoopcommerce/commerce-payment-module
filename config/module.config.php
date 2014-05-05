@@ -24,6 +24,9 @@ return [
                     'ipn_url' => 'http://ops.zoopcommerce.com/admin/payments/paypal/chainedpayments/ipn',
                     'primary_receiver' => null,
                     'secondary_receivers' => [] //'paypal@zoopcommerce.com'
+                ],
+                'anz' => [
+                    'server' => 'https://migs.mastercard.com.au/vpcdps'
                 ]
             ]
         ],
@@ -53,6 +56,7 @@ return [
         'factories' => [
             'zoop.commerce.payment.gateway.paypal.chainedpayment' => 'Zoop\Payment\Gateway\PayPal\ChainedPayment\GatewayFactory',
             'zoop.commerce.payment.gateway.paypal.expresscheckout' => 'Zoop\Payment\Gateway\PayPal\ExpressCheckout\GatewayFactory',
+            'zoop.commerce.payment.gateway.anz' => 'Zoop\Payment\Gateway\Anz\GatewayFactory',
         ]
     ],
 ];
