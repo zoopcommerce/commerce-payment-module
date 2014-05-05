@@ -3,29 +3,29 @@
 namespace Zoop\Payment\Test\PayPal;
 
 use Zoop\Payment\Test\BaseTest;
-use Zoop\Order\DataModel\Order;
-use Zoop\Order\DataModel\Total;
-use Zoop\Order\DataModel\Commission;
-use Zoop\Common\DataModel\Address;
-use Zoop\Common\DataModel\Currency;
 use Zoop\Payment\Gateway\PayPal\ChainedPayment\Gateway;
 use Zoop\Payment\Gateway\PayPal\ChainedPayment\DataModel\GatewayConfig;
+use Zoop\Payment\Initiate\InitiateRequest;
 
 class PaymentTest extends BaseTest
 {
-    public function testPaymentRequest()
+    public function testInitiateRequest()
     {
         $paypal = $this->getApplicationServiceLocator()->get('zoop.commerce.payment.gateway.paypal.chainedpayment');
         
         /* @var $paypal Gateway */
         $order = $this->createOrder();
         
-        $response = $paypal->charge(
-            $order->getTotal()->getOrderPrice(),
-            $order->getTotal()->getCurrency()->getCode(),
-            $order
-        );
+        // note; amount isn't always the full order amount.
+        // We might want to split payments
+        $amount = $order->getTotal()->getOrderPrice();
+        
+        $initiateRequest = new InitiateRequest($amount, $order);
+        
+        $response = $paypal->initiate($initiateRequest);
+
         $this->assertTrue($response->isSuccess());
+        $this->assertInstanceOf('Zoop\Payment\Initiate\InitiateResponse', $response);
     }
 
     /**
@@ -48,45 +48,5 @@ class PaymentTest extends BaseTest
         self::getDocumentManager()->clear($config);
         
         return $config;
-    }
-
-    /**
-     * @return Order
-     */
-    protected function createOrder()
-    {
-        $store = $this->getStore();
-        
-        $order = new Order;
-        $order->setStore($store);
-        $order->setFirstName('John');
-        $order->setLastName('Doe');
-        
-        $currency = new Currency;
-        $currency->setCode('AUD');
-        $currency->setSymbol('$');
-        $currency->setName('Australian Dollar');
-        
-        $total = new Total;
-        $total->setShippingPrice(10);
-        $total->setProductPrice(100);
-        $total->setProductQuantity(1);
-        $total->setDiscountPrice(0);
-        $total->setTaxPrice(11);
-        $total->setOrderPrice(110);
-        $total->setCurrency($currency);
-        
-        $order->setTotal($total);
-        
-        $commission = new Commission;
-        $commission->setAmount(4.4);
-        $commission->setCharged(4.4);
-        
-        $order->setCommission($commission);
-        
-        self::getDocumentManager()->persist($order);
-        self::getDocumentManager()->flush($order);
-        self::getDocumentManager()->clear($order);
-        return $order;
     }
 }

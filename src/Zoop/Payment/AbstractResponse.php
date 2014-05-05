@@ -1,30 +1,17 @@
 <?php
 
-namespace Zoop\Payment\Gateway;
+namespace Zoop\Payment;
 
-use Zoop\Payment\DataModel\TransactionInterface;
+use Zoop\Payment\AbstractResponseInterface;
 
 /**
  *
  * @author  Josh Stuart <josh.stuart@zoopcommerce.com>
  */
-use Zoop\Payment\Gateway\GatewayResponseInterface;
-
-class GatewayResponse implements GatewayResponseInterface
+abstract class AbstractResponse implements AbstractResponseInterface
 {
-    protected $transaction;
     protected $success;
     protected $error;
-
-    /**
-     * The transaction model
-     * 
-     * @return TransactionInterface
-     */
-    public function getTransaction()
-    {
-        return $this->transaction;
-    }
 
     /**
      * Is the transaction a success
@@ -54,15 +41,6 @@ class GatewayResponse implements GatewayResponseInterface
     public function getError()
     {
         return $this->error;
-    }
-
-    /**
-     * 
-     * @param TransactionInterface $transaction
-     */
-    public function setTransaction(TransactionInterface $transaction)
-    {
-        $this->transaction = $transaction;
     }
 
     /**

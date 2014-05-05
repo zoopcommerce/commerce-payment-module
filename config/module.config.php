@@ -26,7 +26,13 @@ return [
                     'secondary_receivers' => [] //'paypal@zoopcommerce.com'
                 ],
                 'anz' => [
-                    'server' => 'https://migs.mastercard.com.au/vpcdps'
+                    'server' => 'https://migs.mastercard.com.au/vpcdps',
+                    'port' => 9050,
+                    'merchantProfileId' => '',
+                    'accessCode' => '',
+                    'secureHash' => '',
+                    'username' => '',
+                    'password' => '',
                 ]
             ]
         ],

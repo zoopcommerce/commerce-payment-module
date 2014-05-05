@@ -1,20 +1,13 @@
 <?php
 
-namespace Zoop\Payment\Gateway;
-
-use Zoop\Payment\DataModel\TransactionInterface;
+namespace Zoop\Payment;
 
 /**
  *
  * @author  Josh Stuart <josh.stuart@zoopcommerce.com>
  */
-interface GatewayResponseInterface
-{
-    /**
-     * @return TransactionInterface The transaction details
-     */
-    public function getTransaction();
-    
+interface AbstractResponseInterface
+{    
     /**
      * @return boolean If the transaction was successful
      */

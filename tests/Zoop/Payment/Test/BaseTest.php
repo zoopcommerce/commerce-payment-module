@@ -4,6 +4,11 @@ namespace Zoop\Payment\Test;
 
 use Zend\Test\PHPUnit\Controller\AbstractHttpControllerTestCase;
 use Doctrine\ODM\MongoDB\DocumentManager;
+use Zoop\Common\DataModel\Address;
+use Zoop\Common\DataModel\Currency;
+use Zoop\Order\DataModel\Commission;
+use Zoop\Order\DataModel\Order;
+use Zoop\Order\DataModel\Total;
 use Zoop\Store\DataModel\Store;
 
 abstract class BaseTest extends AbstractHttpControllerTestCase
@@ -107,5 +112,55 @@ abstract class BaseTest extends AbstractHttpControllerTestCase
         }
 
         return self::$store;
+    }
+
+    /**
+     * @return Order
+     */
+    protected function createOrder()
+    {
+        $store = $this->getStore();
+        
+        $order = new Order;
+        $order->setStore($store);
+        $order->setFirstName('John');
+        $order->setLastName('Doe');
+        
+        $address = new Address;
+        $address->setLine1('Trenerry Cres');
+        $address->setLine2('Line 2');
+        $address->setCity('Melbourne');
+        $address->setState('Victoria');
+        $address->setPostcode('3000');
+        $address->setCountry('AU');
+        
+        $order->setAddress($address);
+        
+        $currency = new Currency;
+        $currency->setCode('AUD');
+        $currency->setSymbol('$');
+        $currency->setName('Australian Dollar');
+        
+        $total = new Total;
+        $total->setShippingPrice(10);
+        $total->setProductPrice(100);
+        $total->setProductQuantity(1);
+        $total->setDiscountPrice(0);
+        $total->setTaxPrice(11);
+        $total->setOrderPrice(110);
+        $total->setCurrency($currency);
+        
+        $order->setTotal($total);
+        
+        $commission = new Commission;
+        $commission->setAmount(4.4);
+        $commission->setCharged(4.4);
+        
+        $order->setCommission($commission);
+        
+        self::getDocumentManager()->persist($order);
+        self::getDocumentManager()->flush($order);
+        self::getDocumentManager()->clear($order);
+        return $order;
     }
 }

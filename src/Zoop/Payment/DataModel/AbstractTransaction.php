@@ -87,5 +87,4 @@ abstract class AbstractTransaction
     {
         $this->amount = (float) $amount;
     }
-
 }
